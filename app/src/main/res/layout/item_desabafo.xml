@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp"
+    android:background="@drawable/item_background">
+
+    <!-- Categoria do sentimento -->
+    <TextView
+        android:id="@+id/tvCategoria"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Categoria: Triste"
+        android:textSize="12sp"
+        android:textColor="@color/secondaryTextColor" />
+
+    <!-- Texto do desabafo -->
+    <TextView
+        android:id="@+id/tvDesabafo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Esse é o texto do desabafo."
+        android:textSize="16sp"
+        android:textColor="@color/primaryTextColor"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp" />
+
+    <!-- Data do desabafo -->
+    <TextView
+        android:id="@+id/tvData"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Postado em: 25/11/2024"
+        android:textSize="12sp"
+        android:textColor="@color/secondaryTextColor" />
+</LinearLayout>

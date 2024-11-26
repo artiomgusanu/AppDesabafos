@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "541671974358",
+    "project_id": "appdesabafos",
+    "storage_bucket": "appdesabafos.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:541671974358:android:7a2314f842e033ff72b077",
+        "android_client_info": {
+          "package_name": "ip.santarem.myapplication"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCVFKRpR1C9uhZl019CizFJDRnWHKT_xhY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
