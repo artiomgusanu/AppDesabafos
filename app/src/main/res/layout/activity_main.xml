@@ -28,6 +28,13 @@
             android:layout_marginBottom="8dp"
             android:inputType="textMultiLine" />
 
+        <ImageView
+            android:id="@+id/imageViewPreview"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:visibility="gone"
+            android:scaleType="centerCrop" />
+
         <!-- Botões para adicionar imagem e postar -->
         <LinearLayout
             android:layout_width="match_parent"

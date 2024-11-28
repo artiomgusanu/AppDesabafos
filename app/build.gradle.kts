@@ -52,5 +52,5 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     implementation ("androidx.room:room-ktx:2.5.0")
     implementation ("com.github.bumptech.glide:glide:4.15.1")
-    kapt ("com.github.bumptech.glide:compiler:4.15.12")
+    //kapt ("com.github.bumptech.glide:compiler:4.15.12")
 }
