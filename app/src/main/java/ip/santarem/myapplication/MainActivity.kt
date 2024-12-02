@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -41,6 +42,9 @@ class MainActivity : AppCompatActivity() {
         adapter = PostAdapter(posts)
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
+
+        // Configurar listeners e carregamentos
+        setupRealtimeListener()
 
         val btnPost = findViewById<ImageButton>(R.id.btnPost)
         val btnAddImage = findViewById<ImageButton>(R.id.btnAddImage)
@@ -88,48 +92,88 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun postToFirestore(content: String, imageUri: Uri?) {
-        val userId = auth.currentUser?.uid ?: "Anônimo"
-        val userName = "Usuário" // Aqui você pode buscar o nome real do usuário do Firestore
-        val timestamp = System.currentTimeMillis()
-        val formattedDate = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date(timestamp))
+        val currentUser = auth.currentUser
+        val userId = currentUser?.uid ?: "Anônimo"
 
-        val postMap = hashMapOf(
-            "content" to content,
-            "imageUri" to (imageUri?.toString() ?: ""),
-            "userId" to userId,
-            "userName" to userName,
-            "timestamp" to formattedDate
-        )
+        // Recuperar o nome de usuário do Firestore
+        firestore.collection("users").document(userId).get()
+            .addOnSuccessListener { document ->
+                val userName = document.getString("username") ?: "Utilizador Desconhecido"
+                val formattedDate = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date())
 
-        firestore.collection("posts")
-            .add(postMap)
-            .addOnSuccessListener {
-                Toast.makeText(this, "Post publicado!", Toast.LENGTH_SHORT).show()
-                loadPostsFromFirestore()
+                val postMap = hashMapOf(
+                    "content" to content,
+                    "imageUri" to (imageUri?.toString() ?: ""),
+                    "userId" to userId,
+                    "userName" to userName,
+                    "timestamp" to formattedDate
+                )
+
+                // Salvar o post no Firestore
+                firestore.collection("posts")
+                    .add(postMap)
+                    .addOnSuccessListener { documentReference ->
+                        // Adicionar o post diretamente na lista local
+                        val newPost = Post(content, imageUri?.toString(), userName, formattedDate)
+                        posts.add(0, newPost) // Adiciona no topo da lista
+                        adapter.notifyItemInserted(0)
+                        recyclerView.scrollToPosition(0) // Scroll para o novo post
+
+                        Toast.makeText(this, "Post publicado!", Toast.LENGTH_SHORT).show()
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(this, "Erro ao publicar o post!", Toast.LENGTH_SHORT).show()
+                    }
             }
             .addOnFailureListener {
-                Toast.makeText(this, "Erro ao publicar o post!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Erro ao recuperar utilizador!", Toast.LENGTH_SHORT).show()
             }
     }
 
+
+
     private fun loadPostsFromFirestore() {
         firestore.collection("posts")
-            .orderBy("timestamp")
+            .orderBy("timestamp") // Ordena os posts pela data
             .get()
             .addOnSuccessListener { result ->
-                posts.clear()
+                posts.clear() // Limpa a lista local antes de carregar os novos posts
                 for (document in result) {
                     val content = document.getString("content") ?: ""
                     val imageUri = document.getString("imageUri")
-                    val userName = document.getString("userName") ?: "Anônimo"
-                    val timestamp = document.getString("timestamp") ?: ""
+                    val userName = document.getString("userName") ?: "Utilizador Desconhecido"
+                    val timestamp = document.getString("timestamp") ?: "Data desconhecida"
 
                     posts.add(Post(content, imageUri, userName, timestamp))
                 }
-                adapter.notifyDataSetChanged()
+                adapter.notifyDataSetChanged() // Atualiza o RecyclerView com os novos dados
             }
             .addOnFailureListener {
                 Toast.makeText(this, "Erro ao carregar posts!", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun setupRealtimeListener() {
+        firestore.collection("posts")
+            .orderBy("timestamp") // Ordena os posts pela data
+            .addSnapshotListener { snapshots, error ->
+                if (error != null) {
+                    Toast.makeText(this, "Erro ao escutar atualizações: ${error.message}", Toast.LENGTH_SHORT).show()
+                    return@addSnapshotListener
+                }
+
+                if (snapshots != null) {
+                    posts.clear()
+                    for (document in snapshots) {
+                        val content = document.getString("content") ?: ""
+                        val imageUri = document.getString("imageUri")
+                        val userName = document.getString("userName") ?: "Utilizador Desconhecido"
+                        val timestamp = document.getString("timestamp") ?: "Data desconhecida"
+
+                        posts.add(Post(content, imageUri, userName, timestamp))
+                    }
+                    adapter.notifyDataSetChanged() // Atualiza o RecyclerView com os novos dados
+                }
             }
     }
 

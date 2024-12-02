@@ -14,10 +14,10 @@ import java.util.Locale
 class PostAdapter(private val posts: List<Post>) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
     class PostViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val tvContent: TextView = view.findViewById(R.id.tvContent)
-        val tvUsername: TextView = view.findViewById(R.id.tvUsername)
-        val tvDate: TextView = view.findViewById(R.id.tvDate)
-        val ivImage: ImageView = view.findViewById(R.id.ivImage)
+        val contentTextView: TextView = view.findViewById(R.id.tvContent)
+        val imageView: ImageView = view.findViewById(R.id.ivPostImage)
+        val userNameTextView: TextView = view.findViewById(R.id.tvUserName)
+        val timestampTextView: TextView = view.findViewById(R.id.tvTimestamp)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
@@ -27,23 +27,17 @@ class PostAdapter(private val posts: List<Post>) : RecyclerView.Adapter<PostAdap
 
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
         val post = posts[position]
-        holder.tvContent.text = post.text
-        holder.tvUsername.text = post.username
+        holder.contentTextView.text = post.content
+        holder.userNameTextView.text = post.userName
+        holder.timestampTextView.text = post.timestamp
 
-        // Formatando data
-        val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
-        val date = Date(post.timestamp)
-        holder.tvDate.text = sdf.format(date)
-
-        // Mostrar imagem (se houver)
-        if (post.imageUrl != null) {
-            holder.ivImage.visibility = View.VISIBLE
-            Glide.with(holder.itemView.context).load(post.imageUrl).into(holder.ivImage)
+        if (!post.imageUri.isNullOrEmpty()) {
+            holder.imageView.visibility = View.VISIBLE
+            Glide.with(holder.itemView.context).load(post.imageUri).into(holder.imageView)
         } else {
-            holder.ivImage.visibility = View.GONE
+            holder.imageView.visibility = View.GONE
         }
     }
 
     override fun getItemCount() = posts.size
 }
-
