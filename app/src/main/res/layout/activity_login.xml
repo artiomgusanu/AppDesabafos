@@ -38,6 +38,14 @@
             android:inputType="textPassword"
             android:layout_marginBottom="16dp" />
 
+        <CheckBox
+            android:id="@+id/checkboxRememberMe"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Lembrar-me"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp" />
+
         <!-- Botão de Login -->
         <Button
             android:id="@+id/btnLogin"
