@@ -24,7 +24,6 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login)
 
         // Inicializar Firebase Auth
         auth = FirebaseAuth.getInstance()
@@ -34,7 +33,12 @@ class LoginActivity : AppCompatActivity() {
         editor = sharedPreferences.edit()
 
         // Verifica se o utilizador está logado
-        checkLoginStatus()
+        if (checkLoginStatus()) {
+            navigateToMainActivity()
+            return // Evita carregar o layout do LoginActivity
+        }
+
+        setContentView(R.layout.activity_login)
 
         // Vincular views
         etLoginEmail = findViewById(R.id.etLoginEmail)
@@ -60,10 +64,7 @@ class LoginActivity : AppCompatActivity() {
                                 editor.apply()
                             }
 
-                            // Redireciona para a página principal
-                            val intent = Intent(this, MainActivity::class.java)
-                            startActivity(intent)
-                            finish()
+                            navigateToMainActivity()
                         } else {
                             Toast.makeText(this, "Erro ao fazer login!", Toast.LENGTH_SHORT).show()
                         }
@@ -81,29 +82,30 @@ class LoginActivity : AppCompatActivity() {
     }
 
     // Verifica o status de login
-    private fun checkLoginStatus() {
+    private fun checkLoginStatus(): Boolean {
         // Verifica se o usuário já está autenticado com o Firebase
         val currentUser = auth.currentUser
         if (currentUser != null) {
-            // Usuário já logado, redireciona para a página principal
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-            finish()
-        } else {
-            // Se o usuário não estiver logado, verifica o estado de "lembrar-me"
-            val isLoggedIn = sharedPreferences.getBoolean("isLoggedIn", false)
-            if (isLoggedIn) {
-                // Se "lembrar-me" estiver ativado, tenta redirecionar diretamente para a MainActivity
-                val intent = Intent(this, MainActivity::class.java)
-                startActivity(intent)
-                finish()
-            }
+            return true
         }
+
+        // Se o usuário não estiver logado, verifica o estado de "lembrar-me"
+        val isLoggedIn = sharedPreferences.getBoolean("isLoggedIn", false)
+        return isLoggedIn
+    }
+
+    // Redireciona para a MainActivity
+    private fun navigateToMainActivity() {
+        val intent = Intent(this, MainActivity::class.java)
+        startActivity(intent)
+        finish() // Evita que o usuário volte para a tela de login
     }
 
     // Garantir que a verificação do estado de login é feita novamente ao retomar a atividade
     override fun onResume() {
         super.onResume()
-        checkLoginStatus()
+        if (checkLoginStatus()) {
+            navigateToMainActivity()
+        }
     }
 }

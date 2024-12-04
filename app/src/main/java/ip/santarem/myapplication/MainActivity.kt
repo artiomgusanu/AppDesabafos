@@ -35,35 +35,19 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Log para verificar se onCreate está sendo chamado corretamente
-        Log.d("MainActivity", "onCreate chamado")
-
         // Verificar o estado de login
-        val sharedPrefs = getSharedPreferences("login_prefs", MODE_PRIVATE)
-        val isRemembered = sharedPrefs.getBoolean("remember_me", false)
-        val currentUser = FirebaseAuth.getInstance().currentUser
-
-        Log.d("MainActivity", "isRemembered: $isRemembered, currentUser: ${currentUser?.uid ?: "null"}")
-
-        if (!isRemembered || currentUser == null) {
-            // Usuário não autenticado ou preferências não lembradas
-            Log.d("MainActivity", "Usuário não autenticado, redirecionando para login.")
-            val intent = Intent(this, LoginActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent)
-            finish()
-            return
+        if (!checkLoginStatus()) {
+            navigateToLogin()
+            return // Para evitar carregar o layout desnecessariamente
         }
 
-        // Se o usuário estiver autenticado e a preferência for "lembrar de mim", continua carregando a MainActivity
-        Log.d("MainActivity", "Usuário autenticado, carregando a MainActivity.")
         setContentView(R.layout.activity_main)
 
         // Inicializando Firebase
         auth = FirebaseAuth.getInstance()
         firestore = FirebaseFirestore.getInstance()
 
-        // Inicializando RecyclerView
+        // Configurar RecyclerView
         recyclerView = findViewById(R.id.rvPosts)
         adapter = PostAdapter(posts)
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -80,7 +64,6 @@ class MainActivity : AppCompatActivity() {
 
         // Adicionar imagem
         btnAddImage.setOnClickListener {
-            Log.d("MainActivity", "Botão de adicionar imagem clicado.")
             val intent = Intent(Intent.ACTION_PICK)
             intent.type = "image/*"
             startActivityForResult(intent, REQUEST_CODE_PICK_IMAGE)
@@ -88,7 +71,6 @@ class MainActivity : AppCompatActivity() {
 
         // Publicar post
         btnPost.setOnClickListener {
-            Log.d("MainActivity", "Botão de publicar clicado.")
             val content = etPostContent.text.toString()
             if (content.isNotBlank() || selectedImageUri != null) {
                 postToFirestore(content, selectedImageUri)
@@ -105,12 +87,10 @@ class MainActivity : AppCompatActivity() {
         bottomNavigationView.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.home -> {
-                    Log.d("MainActivity", "Você já está na página inicial")
                     Toast.makeText(this, "Você já está na página inicial", Toast.LENGTH_SHORT).show()
                     true
                 }
                 R.id.profile -> {
-                    Log.d("MainActivity", "Navegando para o perfil.")
                     val intent = Intent(this, ProfileFragment::class.java)
                     startActivity(intent)
                     true
@@ -120,20 +100,17 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Carregar os posts existentes no Firestore
-        Log.d("MainActivity", "Carregando posts do Firestore.")
         loadPostsFromFirestore()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        Log.d("MainActivity", "onActivityResult chamado, requestCode: $requestCode, resultCode: $resultCode")
         if (requestCode == REQUEST_CODE_PICK_IMAGE && resultCode == RESULT_OK) {
             val uri = data?.data
             if (uri != null) {
                 selectedImageUri = uri
 
                 // Mostrar a pré-visualização da imagem
-                Log.d("MainActivity", "Imagem selecionada: $uri")
                 val imageViewPreview = findViewById<ImageView>(R.id.imageViewPreview)
                 imageViewPreview.visibility = View.VISIBLE
                 Glide.with(this).load(uri).into(imageViewPreview)
@@ -145,9 +122,6 @@ class MainActivity : AppCompatActivity() {
         val currentUser = auth.currentUser
         val userId = currentUser?.uid ?: "Anônimo"
 
-        Log.d("MainActivity", "Postando no Firestore, userId: $userId, content: $content, imageUri: $imageUri")
-
-        // Recuperar o nome de usuário do Firestore
         firestore.collection("users").document(userId).get()
             .addOnSuccessListener { document ->
                 val userName = document.getString("username") ?: "Utilizador Desconhecido"
@@ -161,20 +135,16 @@ class MainActivity : AppCompatActivity() {
                     "timestamp" to formattedDate
                 )
 
-                // Salvar o post no Firestore
                 firestore.collection("posts")
                     .add(postMap)
                     .addOnSuccessListener {
-                        Log.d("MainActivity", "Post publicado com sucesso!")
                         Toast.makeText(this, "Post publicado!", Toast.LENGTH_SHORT).show()
                     }
                     .addOnFailureListener {
-                        Log.e("MainActivity", "Erro ao publicar o post!")
                         Toast.makeText(this, "Erro ao publicar o post!", Toast.LENGTH_SHORT).show()
                     }
             }
             .addOnFailureListener {
-                Log.e("MainActivity", "Erro ao recuperar usuário para post!")
                 Toast.makeText(this, "Erro ao recuperar utilizador!", Toast.LENGTH_SHORT).show()
             }
     }
@@ -184,7 +154,6 @@ class MainActivity : AppCompatActivity() {
             .orderBy("timestamp", Query.Direction.DESCENDING)
             .get()
             .addOnSuccessListener { result ->
-                Log.d("MainActivity", "Posts carregados com sucesso!")
                 posts.clear()
                 for (document in result) {
                     val content = document.getString("content") ?: ""
@@ -197,7 +166,6 @@ class MainActivity : AppCompatActivity() {
                 adapter.notifyDataSetChanged()
             }
             .addOnFailureListener {
-                Log.e("MainActivity", "Erro ao carregar posts do Firestore!")
                 Toast.makeText(this, "Erro ao carregar posts!", Toast.LENGTH_SHORT).show()
             }
     }
@@ -207,13 +175,11 @@ class MainActivity : AppCompatActivity() {
             .orderBy("timestamp", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshots, error ->
                 if (error != null) {
-                    Log.e("MainActivity", "Erro ao escutar atualizações: ${error.message}")
                     Toast.makeText(this, "Erro ao escutar atualizações: ${error.message}", Toast.LENGTH_SHORT).show()
                     return@addSnapshotListener
                 }
 
                 if (snapshots != null) {
-                    Log.d("MainActivity", "Atualizações recebidas dos posts em tempo real!")
                     posts.clear()
                     for (document in snapshots) {
                         val content = document.getString("content") ?: ""
@@ -226,6 +192,20 @@ class MainActivity : AppCompatActivity() {
                     adapter.notifyDataSetChanged()
                 }
             }
+    }
+
+    private fun checkLoginStatus(): Boolean {
+        val sharedPrefs = getSharedPreferences("login_prefs", MODE_PRIVATE)
+        val isRemembered = sharedPrefs.getBoolean("remember_me", false)
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        return isRemembered && currentUser != null
+    }
+
+    private fun navigateToLogin() {
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
     }
 
     companion object {
