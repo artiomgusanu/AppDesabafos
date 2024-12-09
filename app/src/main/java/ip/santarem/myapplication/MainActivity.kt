@@ -103,6 +103,11 @@ class MainActivity : AppCompatActivity() {
         loadPostsFromFirestore()
     }
 
+    override fun onStop() {
+        super.onStop()
+        auth.signOut();
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_CODE_PICK_IMAGE && resultCode == RESULT_OK) {
