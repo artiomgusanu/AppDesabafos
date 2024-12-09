@@ -83,13 +83,13 @@ class LoginActivity : AppCompatActivity() {
 
     // Verifica o status de login
     private fun checkLoginStatus(): Boolean {
-        // Verifica se o usuário já está autenticado com o Firebase
+        // Verifica se o utilizador já está autenticado com o Firebase
         val currentUser = auth.currentUser
         if (currentUser != null) {
             return true
         }
 
-        // Se o usuário não estiver logado, verifica o estado de "lembrar-me"
+        // Se o utilizador não estiver logado, verifica o estado de "lembrar-me"
         val isLoggedIn = sharedPreferences.getBoolean("isLoggedIn", false)
         return isLoggedIn
     }
@@ -98,7 +98,7 @@ class LoginActivity : AppCompatActivity() {
     private fun navigateToMainActivity() {
         val intent = Intent(this, MainActivity::class.java)
         startActivity(intent)
-        finish() // Evita que o usuário volte para a tela de login
+        finish() // Evita que o utilizador volte para a tela de login
     }
 
     // Garantir que a verificação do estado de login é feita novamente ao retomar a atividade

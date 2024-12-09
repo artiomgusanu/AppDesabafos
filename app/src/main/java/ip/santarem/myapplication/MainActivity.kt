@@ -36,10 +36,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         // Verificar o estado de login
-        if (!checkLoginStatus()) {
+        /*if (!checkLoginStatus()) {
             navigateToLogin()
             return // Para evitar carregar o layout desnecessariamente
-        }
+        }*/
 
         setContentView(R.layout.activity_main)
 
