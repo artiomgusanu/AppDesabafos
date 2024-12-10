@@ -95,6 +95,11 @@ class MainActivity : AppCompatActivity() {
                     startActivity(intent)
                     true
                 }
+                R.id.categories -> {
+                    val intent = Intent(this, CategoriesFragment::class.java)
+                    startActivity(intent)
+                    true
+                }
                 else -> false
             }
         }
