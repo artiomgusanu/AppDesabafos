@@ -33,7 +33,11 @@
         <activity android:name=".MainActivity" />
 
         <activity android:name=".ProfileFragment" />
+
         <activity android:name=".CategoriesFragment" />
+
+        <activity android:name=".SadActivity" />
+
 
 
 
