@@ -2,6 +2,7 @@ package ip.santarem.myapplication
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -14,7 +15,7 @@ class ProfileFragment : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private lateinit var firestore: FirebaseFirestore
     private lateinit var tvUsername: TextView
-    private lateinit var tvName: TextView
+    private lateinit var tvEmail: TextView // Alterado para email
     private lateinit var btnResetPassword: Button
     private lateinit var btnLogout: Button
 
@@ -28,7 +29,7 @@ class ProfileFragment : AppCompatActivity() {
 
         // Vincular views
         tvUsername = findViewById(R.id.tvUsername)
-        tvName = findViewById(R.id.tvName)
+        tvEmail = findViewById(R.id.tvEmail) // Alterado para email
         btnResetPassword = findViewById(R.id.btnResetPassword)
         btnLogout = findViewById(R.id.btnLogout)
 
@@ -67,25 +68,39 @@ class ProfileFragment : AppCompatActivity() {
             startActivity(intent)
             finish()
         }
-
     }
 
     private fun loadUserInfo() {
         val currentUser = auth.currentUser
         if (currentUser != null) {
             val userId = currentUser.uid
+            Log.d("ProfileFragment", "User ID: $userId")  // Adicionando log para depuração
+
             firestore.collection("users").document(userId).get()
                 .addOnSuccessListener { document ->
-                    tvUsername.text = document.getString("username") ?: "Usuário desconhecido"
-                    tvName.text = document.getString("name") ?: "Nome não disponível"
+                    if (document.exists()) {
+                        // Verificar se o documento contém os campos esperados
+                        val username = document.getString("username")
+                        val email = currentUser.email // Pegando o email diretamente do FirebaseAuth
+                        Log.d("ProfileFragment", "Username: $username, Email: $email")  // Adicionando log para depuração
+
+                        tvUsername.text = username ?: "Usuário desconhecido"
+                        tvEmail.text = email ?: "Email não disponível"
+                    } else {
+                        Log.e("ProfileFragment", "Documento não encontrado")
+                        tvUsername.text = "Usuário não encontrado"
+                        tvEmail.text = "Email não encontrado"
+                    }
                 }
-                .addOnFailureListener {
+                .addOnFailureListener { exception ->
+                    Log.e("ProfileFragment", "Erro ao carregar dados: ${exception.message}")  // Log de erro
                     tvUsername.text = "Erro ao carregar dados"
-                    tvName.text = "Erro ao carregar dados"
+                    tvEmail.text = "Erro ao carregar dados"
                 }
         } else {
+            Log.e("ProfileFragment", "Usuário não autenticado")
             tvUsername.text = "Não autenticado"
-            tvName.text = "Não autenticado"
+            tvEmail.text = "Não autenticado"
         }
     }
 }
