@@ -1,7 +1,6 @@
 package ip.santarem.myapplication
 
 import android.content.Intent
-import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -9,6 +8,7 @@ import android.view.View
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -35,12 +35,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Verificar o estado de login
-        /*if (!checkLoginStatus()) {
-            navigateToLogin()
-            return // Para evitar carregar o layout desnecessariamente
-        }*/
-
         setContentView(R.layout.activity_main)
 
         // Inicializando Firebase
@@ -55,6 +49,13 @@ class MainActivity : AppCompatActivity() {
 
         // Configurar listener para atualizações em tempo real
         setupRealtimeListener()
+
+        // Recuperar categoria passada pela Intent
+        val category = intent.getStringExtra("category") ?: "Zangado"  // Categoria padrão "Zangado" se não for passada
+        Log.d("MainActivity", "Categoria recebida: $category")  // Log para depuração
+
+
+
 
         val btnPost = findViewById<ImageButton>(R.id.btnPost)
         val btnAddImage = findViewById<ImageButton>(R.id.btnAddImage)
@@ -72,8 +73,10 @@ class MainActivity : AppCompatActivity() {
         // Publicar post
         btnPost.setOnClickListener {
             val content = etPostContent.text.toString()
+            val categoria = findViewById<Spinner>(R.id.spinnerCategoria).selectedItem.toString()
+
             if (content.isNotBlank() || selectedImageUri != null) {
-                postToFirestore(content, selectedImageUri)
+                postToFirestore(content, selectedImageUri, categoria)
                 etPostContent.text.clear()
                 selectedImageUri = null
                 imageViewPreview.visibility = View.GONE
@@ -104,13 +107,16 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Carregar os posts existentes no Firestore
-        loadPostsFromFirestore()
+        // Carregar posts de uma categoria padrão ao iniciar
+//        loadPostsFromFirestore("Zangado") // Aqui você pode alterar para a categoria padrão que deseja
+
+        // Carregar posts da categoria correta
+        loadPostsFromFirestore(category)
     }
 
     override fun onStop() {
         super.onStop()
-        auth.signOut();
+        auth.signOut()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -128,7 +134,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun postToFirestore(content: String, imageUri: Uri?) {
+    private fun postToFirestore(content: String, imageUri: Uri?, categoria: String) {
         val currentUser = auth.currentUser
         val userId = currentUser?.uid ?: "Anônimo"
 
@@ -142,6 +148,7 @@ class MainActivity : AppCompatActivity() {
                     "imageUri" to (imageUri?.toString() ?: ""),
                     "userId" to userId,
                     "userName" to userName,
+                    "categoria" to categoria, // A categoria está sendo passada corretamente
                     "timestamp" to formattedDate
                 )
 
@@ -159,26 +166,38 @@ class MainActivity : AppCompatActivity() {
             }
     }
 
-    private fun loadPostsFromFirestore() {
+    private fun loadPostsFromFirestore(categoria: String) {
+        Log.d("MainActivity", "Carregando posts da categoria: $categoria") // Log para depuração
+
         firestore.collection("posts")
+            .whereEqualTo("categoria", categoria)
             .orderBy("timestamp", Query.Direction.DESCENDING)
             .get()
             .addOnSuccessListener { result ->
                 posts.clear()
+
+                if (result.isEmpty) {
+                    Log.d("MainActivity", "Nenhum post encontrado para a categoria: $categoria")
+                    Toast.makeText(this, "Nenhum post encontrado para esta categoria!", Toast.LENGTH_SHORT).show()
+                }
+
                 for (document in result) {
                     val content = document.getString("content") ?: ""
                     val imageUri = document.getString("imageUri")
                     val userName = document.getString("userName") ?: "Utilizador Desconhecido"
                     val timestamp = document.getString("timestamp") ?: "Data desconhecida"
+                    val categoria = document.getString("categoria") ?: "Sem categoria"
 
-                    posts.add(Post(content, imageUri, userName, timestamp))
+                    posts.add(Post(content, imageUri, userName, timestamp, categoria))
                 }
                 adapter.notifyDataSetChanged()
             }
-            .addOnFailureListener {
+            .addOnFailureListener { exception ->
+                Log.e("MainActivity", "Erro ao carregar posts: ${exception.message}")
                 Toast.makeText(this, "Erro ao carregar posts!", Toast.LENGTH_SHORT).show()
             }
     }
+
 
     private fun setupRealtimeListener() {
         firestore.collection("posts")
@@ -196,26 +215,13 @@ class MainActivity : AppCompatActivity() {
                         val imageUri = document.getString("imageUri")
                         val userName = document.getString("userName") ?: "Utilizador Desconhecido"
                         val timestamp = document.getString("timestamp") ?: "Data desconhecida"
+                        val categoria = document.getString("categoria") ?: "Sem categoria"
 
-                        posts.add(Post(content, imageUri, userName, timestamp))
+                        posts.add(Post(content, imageUri, userName, timestamp, categoria))
                     }
                     adapter.notifyDataSetChanged()
                 }
             }
-    }
-
-    private fun checkLoginStatus(): Boolean {
-        val sharedPrefs = getSharedPreferences("login_prefs", MODE_PRIVATE)
-        val isRemembered = sharedPrefs.getBoolean("remember_me", false)
-        val currentUser = FirebaseAuth.getInstance().currentUser
-        return isRemembered && currentUser != null
-    }
-
-    private fun navigateToLogin() {
-        val intent = Intent(this, LoginActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        startActivity(intent)
-        finish()
     }
 
     companion object {

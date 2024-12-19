@@ -17,17 +17,20 @@ class CategoriesFragment : AppCompatActivity() {
         val buttonDesperate = findViewById<Button>(R.id.button_desperate)
 
         buttonAngry.setOnClickListener {
-            val intent = Intent(this, AngryActivity::class.java)
+            val intent = Intent(this, MainActivity::class.java)  // Certifique-se de ir para a MainActivity
+            intent.putExtra("category", "Zangado")  // Passa a categoria para a MainActivity
             startActivity(intent)
         }
 
         buttonSad.setOnClickListener {
-            val intent = Intent(this, SadActivity::class.java)
+            val intent = Intent(this, MainActivity::class.java)
+            intent.putExtra("category", "Triste")  // Passa a categoria "Triste"
             startActivity(intent)
         }
 
         buttonDesperate.setOnClickListener {
-            val intent = Intent(this, DesperateActivity::class.java)
+            val intent = Intent(this, MainActivity::class.java)
+            intent.putExtra("category", "Desesperado")  // Passa a categoria "Desesperado"
             startActivity(intent)
         }
     }

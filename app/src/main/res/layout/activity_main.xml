@@ -43,6 +43,14 @@
             android:orientation="horizontal"
             android:gravity="end">
 
+            <Spinner
+                android:id="@+id/spinnerCategoria"
+                android:layout_width="270dp"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="8dp"
+                android:entries="@array/categorias_array" />
+
+
             <!-- Botão para adicionar imagem -->
             <ImageButton
                 android:id="@+id/btnAddImage"

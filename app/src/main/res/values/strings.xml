@@ -1,3 +1,9 @@
 <resources>
-    <string name="app_name">My Application</string>
+    <string name="app_name">AppDesabafos</string>
+    <string-array name="categorias_array">
+        <item>Triste</item>
+        <item>Zangado</item>
+        <item>Desesperado</item>
+    </string-array>
+
 </resources>

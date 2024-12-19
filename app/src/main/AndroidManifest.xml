@@ -36,7 +36,8 @@
 
         <activity android:name=".CategoriesFragment" />
 
-        <activity android:name=".SadActivity" />
+        <activity android:name=".AngryActivity" />
+
 
 
 
