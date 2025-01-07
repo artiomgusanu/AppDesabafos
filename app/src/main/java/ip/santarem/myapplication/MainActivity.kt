@@ -52,7 +52,7 @@ class MainActivity : AppCompatActivity() {
 
         // Recuperar categoria passada pela Intent
         val category = intent.getStringExtra("category") ?: "Zangado"  // Categoria padrão "Zangado" se não for passada
-        Log.d("MainActivity", "Categoria recebida: $category")  // Log para depuração
+        Log.d("MainActivity", "Categoria recebida: $category")
 
 
 
@@ -114,6 +114,8 @@ class MainActivity : AppCompatActivity() {
         loadPostsFromFirestore(category)
     }
 
+
+
     override fun onStop() {
         super.onStop()
         auth.signOut()
@@ -165,6 +167,40 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "Erro ao recuperar utilizador!", Toast.LENGTH_SHORT).show()
             }
     }
+
+    private fun postResponseToFirestore(postId: String, respostaContent: String) {
+        val currentUser = auth.currentUser
+        val userId = currentUser?.uid ?: "Anônimo"
+
+        firestore.collection("users").document(userId).get()
+            .addOnSuccessListener { document ->
+                val userName = document.getString("username") ?: "Utilizador Desconhecido"
+                val formattedDate = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date())
+
+                // Mapeamento dos dados da resposta
+                val responseMap = hashMapOf(
+                    "id_post" to postId,        // ID do post relacionado
+                    "Resposta" to respostaContent, // Conteúdo da resposta
+                    "userId" to userId,        // ID do autor da resposta
+                    "userName" to userName,    // Nome do autor da resposta
+                    "timestamp" to formattedDate // Data e hora da resposta
+                )
+
+                // Adiciona a resposta na coleção "responses"
+                firestore.collection("responses")
+                    .add(responseMap)
+                    .addOnSuccessListener {
+                        Toast.makeText(this, "Resposta publicada com sucesso!", Toast.LENGTH_SHORT).show()
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(this, "Erro ao publicar a resposta!", Toast.LENGTH_SHORT).show()
+                    }
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "Erro ao recuperar utilizador!", Toast.LENGTH_SHORT).show()
+            }
+    }
+
 
     private fun loadPostsFromFirestore(categoria: String) {
         Log.d("MainActivity", "Carregando posts da categoria: $categoria") // Log para depuração

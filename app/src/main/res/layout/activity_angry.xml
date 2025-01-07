@@ -7,12 +7,19 @@
     android:layout_height="match_parent"
     tools:context=".AngryActivity">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvAngryPosts"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="16dp"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        tools:listitem="@layout/item_post" />
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Esta é a página Zangados:"
+        android:textSize="24sp"
+        tools:layout_editor_absoluteX="27dp"
+        tools:layout_editor_absoluteY="16dp" />
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/RVAngtyPosts"
+        android:layout_width="409dp"
+        android:layout_height="681dp"
+        tools:layout_editor_absoluteX="1dp"
+        tools:layout_editor_absoluteY="49dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>

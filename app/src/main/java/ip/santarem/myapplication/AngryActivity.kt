@@ -23,7 +23,7 @@ class AngryActivity : AppCompatActivity() {
         firestore = FirebaseFirestore.getInstance()
 
         // Configurar RecyclerView
-        recyclerView = findViewById(R.id.rvAngryPosts)
+        recyclerView = findViewById(R.id.RVAngtyPosts)
         adapter = PostAdapter(posts)
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter

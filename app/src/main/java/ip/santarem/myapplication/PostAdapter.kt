@@ -3,6 +3,7 @@ package ip.santarem.myapplication
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -34,6 +35,7 @@ class PostAdapter(private val posts: List<Post>) : RecyclerView.Adapter<PostAdap
         } else {
             holder.ivPostImage.visibility = View.GONE
         }
+
     }
 
     override fun getItemCount(): Int {

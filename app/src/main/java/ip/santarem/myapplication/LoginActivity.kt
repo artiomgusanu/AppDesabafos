@@ -58,7 +58,7 @@ class LoginActivity : AppCompatActivity() {
                 auth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
-                            // Salva o estado de login se o usuário escolher "lembrar-me"
+                            // Salva o estado de login se o utilizador escolher "lembrar-me"
                             if (rememberMe) {
                                 editor.putBoolean("isLoggedIn", true)
                                 editor.apply()
