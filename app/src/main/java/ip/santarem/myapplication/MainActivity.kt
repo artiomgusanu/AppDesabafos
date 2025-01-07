@@ -107,7 +107,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Carregar posts da categoria correta
-        loadPostsFromFirestore(category)
+        loadPostsFromFirestore()
     }
 
     override fun onStop() {
@@ -198,19 +198,18 @@ class MainActivity : AppCompatActivity() {
         dialog.show(supportFragmentManager, "CommentDialogFragment")
     }
 
-    private fun loadPostsFromFirestore(categoria: String) {
-        Log.d("MainActivity", "Carregando posts da categoria: $categoria")
+    private fun loadPostsFromFirestore() {
+        Log.d("MainActivity", "Carregando todos os posts")
 
         firestore.collection("posts")
-            .whereEqualTo("categoria", categoria)
             .orderBy("timestamp", Query.Direction.DESCENDING)
             .get()
             .addOnSuccessListener { result ->
                 posts.clear()
 
                 if (result.isEmpty) {
-                    Log.d("MainActivity", "Nenhum post encontrado para a categoria: $categoria")
-                    Toast.makeText(this, "Nenhum post encontrado para esta categoria!", Toast.LENGTH_SHORT).show()
+                    Log.d("MainActivity", "Nenhum post encontrado!")
+                    Toast.makeText(this, "Nenhum post encontrado!", Toast.LENGTH_SHORT).show()
                 }
 
                 for (document in result) {
