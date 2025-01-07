@@ -45,13 +45,16 @@
         android:scaleType="centerCrop"
         android:visibility="gone" />
 
-    <Button
-        android:id="@+id/btn_view_responses"
+    <ImageButton
+        android:id="@+id/btnComment"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Ver Respostas"
-        android:layout_margin="16dp"
-        android:layout_gravity="center_horizontal" />
+        android:src="@drawable/ic_comment"
+        android:contentDescription="Comentário"
+        android:background="?android:attr/selectableItemBackground"
+        android:layout_gravity="end"/>
+
+
 
 </LinearLayout>
 

@@ -24,7 +24,12 @@ class DesperateActivity : AppCompatActivity() {
 
         // Configurar RecyclerView
         recyclerView = findViewById(R.id.RVDesesperatePosts)
-        adapter = PostAdapter(posts)
+
+        // Passando o onCommentClick ao adaptador para tratar o clique nos comentários
+        adapter = PostAdapter(posts) { post ->
+            openCommentDialog(post) // Função chamada quando o botão de comentário é clicado
+        }
+
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
 
@@ -46,14 +51,22 @@ class DesperateActivity : AppCompatActivity() {
                     val timestamp = document.getString("timestamp") ?: "Data desconhecida"
                     val categoria = document.getString("categoria") ?: "Sem categoria"
 
+                    // Adiciona o post à lista
                     posts.add(Post(content, imageUri, userName, timestamp, categoria))
                 }
 
+                // Atualiza a lista do adapter com os posts carregados
                 adapter.notifyDataSetChanged()
             }
             .addOnFailureListener {
                 Toast.makeText(this, "Erro ao carregar posts!", Toast.LENGTH_SHORT).show()
             }
     }
-}
 
+    // Método para abrir o diálogo de comentários quando um post é clicado
+    private fun openCommentDialog(post: Post) {
+        // Aqui você pode adicionar a lógica para abrir o CommentDialogFragment
+        val dialog = CommentDialogFragment(post.id)
+        dialog.show(supportFragmentManager, "CommentDialogFragment")
+    }
+}

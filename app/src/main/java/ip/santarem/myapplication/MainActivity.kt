@@ -34,7 +34,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContentView(R.layout.activity_main)
 
         // Inicializando Firebase
@@ -43,7 +42,9 @@ class MainActivity : AppCompatActivity() {
 
         // Configurar RecyclerView
         recyclerView = findViewById(R.id.rvPosts)
-        adapter = PostAdapter(posts)
+        adapter = PostAdapter(posts) { post ->
+            openCommentDialog(post)
+        }
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
 
@@ -51,12 +52,10 @@ class MainActivity : AppCompatActivity() {
         setupRealtimeListener()
 
         // Recuperar categoria passada pela Intent
-        val category = intent.getStringExtra("category") ?: "Zangado"  // Categoria padrão "Zangado" se não for passada
+        val category = intent.getStringExtra("category") ?: "Zangado"
         Log.d("MainActivity", "Categoria recebida: $category")
 
-
-
-
+        // Inicialização dos componentes da UI
         val btnPost = findViewById<ImageButton>(R.id.btnPost)
         val btnAddImage = findViewById<ImageButton>(R.id.btnAddImage)
         val etPostContent = findViewById<EditText>(R.id.etPostContent)
@@ -107,14 +106,9 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Carregar posts de uma categoria padrão ao iniciar
-//        loadPostsFromFirestore("Zangado") // Aqui você pode alterar para a categoria padrão que deseja
-
         // Carregar posts da categoria correta
         loadPostsFromFirestore(category)
     }
-
-
 
     override fun onStop() {
         super.onStop()
@@ -150,7 +144,7 @@ class MainActivity : AppCompatActivity() {
                     "imageUri" to (imageUri?.toString() ?: ""),
                     "userId" to userId,
                     "userName" to userName,
-                    "categoria" to categoria, // A categoria está sendo passada corretamente
+                    "categoria" to categoria,
                     "timestamp" to formattedDate
                 )
 
@@ -177,16 +171,14 @@ class MainActivity : AppCompatActivity() {
                 val userName = document.getString("username") ?: "Utilizador Desconhecido"
                 val formattedDate = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date())
 
-                // Mapeamento dos dados da resposta
                 val responseMap = hashMapOf(
-                    "id_post" to postId,        // ID do post relacionado
-                    "Resposta" to respostaContent, // Conteúdo da resposta
-                    "userId" to userId,        // ID do autor da resposta
-                    "userName" to userName,    // Nome do autor da resposta
-                    "timestamp" to formattedDate // Data e hora da resposta
+                    "id_post" to postId,
+                    "Resposta" to respostaContent,
+                    "userId" to userId,
+                    "userName" to userName,
+                    "timestamp" to formattedDate
                 )
 
-                // Adiciona a resposta na coleção "responses"
                 firestore.collection("responses")
                     .add(responseMap)
                     .addOnSuccessListener {
@@ -201,9 +193,13 @@ class MainActivity : AppCompatActivity() {
             }
     }
 
+    private fun openCommentDialog(post: Post) {
+        val dialog = CommentDialogFragment(post.id)
+        dialog.show(supportFragmentManager, "CommentDialogFragment")
+    }
 
     private fun loadPostsFromFirestore(categoria: String) {
-        Log.d("MainActivity", "Carregando posts da categoria: $categoria") // Log para depuração
+        Log.d("MainActivity", "Carregando posts da categoria: $categoria")
 
         firestore.collection("posts")
             .whereEqualTo("categoria", categoria)
@@ -233,7 +229,6 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "Erro ao carregar posts!", Toast.LENGTH_SHORT).show()
             }
     }
-
 
     private fun setupRealtimeListener() {
         firestore.collection("posts")

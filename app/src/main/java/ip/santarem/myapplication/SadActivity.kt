@@ -24,7 +24,12 @@ class SadActivity : AppCompatActivity() {
 
         // Configurar RecyclerView
         recyclerView = findViewById(R.id.RVSadPosts)
-        adapter = PostAdapter(posts)
+
+        // Passando a função onCommentClick para o adapter
+        adapter = PostAdapter(posts) { post ->
+            openCommentDialog(post) // Chama a função para abrir o dialogo de comentário
+        }
+
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
 
@@ -38,7 +43,7 @@ class SadActivity : AppCompatActivity() {
             .orderBy("timestamp", Query.Direction.DESCENDING)
             .get()
             .addOnSuccessListener { result ->
-                posts.clear()
+                posts.clear()  // Limpa a lista de posts antes de adicionar novos
                 for (document in result) {
                     val content = document.getString("content") ?: ""
                     val imageUri = document.getString("imageUri")
@@ -46,13 +51,21 @@ class SadActivity : AppCompatActivity() {
                     val timestamp = document.getString("timestamp") ?: "Data desconhecida"
                     val categoria = document.getString("categoria") ?: "Sem categoria"
 
+                    // Adiciona cada post à lista
                     posts.add(Post(content, imageUri, userName, timestamp, categoria))
                 }
 
+                // Atualiza a lista de posts no adapter
                 adapter.notifyDataSetChanged()
             }
             .addOnFailureListener {
                 Toast.makeText(this, "Erro ao carregar posts!", Toast.LENGTH_SHORT).show()
             }
+    }
+
+    // Função para abrir o dialogo de comentário quando o botão de comentário for pressionado
+    private fun openCommentDialog(post: Post) {
+        val dialog = CommentDialogFragment(post.id)  // Passando o id do post para o fragmento de comentário
+        dialog.show(supportFragmentManager, "CommentDialogFragment")
     }
 }

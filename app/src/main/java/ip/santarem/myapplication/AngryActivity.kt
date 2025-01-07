@@ -24,12 +24,20 @@ class AngryActivity : AppCompatActivity() {
 
         // Configurar RecyclerView
         recyclerView = findViewById(R.id.RVAngtyPosts)
-        adapter = PostAdapter(posts)
+        adapter = PostAdapter(posts) { post ->
+            openCommentDialog(post) // Agora chama a função openCommentDialog
+        }
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
 
         // Carregar os posts da categoria "Zangado"
         loadAngryPosts()
+    }
+
+    // Definir a função openCommentDialog
+    private fun openCommentDialog(post: Post) {
+        val dialog = CommentDialogFragment(post.id)
+        dialog.show(supportFragmentManager, "CommentDialogFragment")
     }
 
     private fun loadAngryPosts() {
